@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Planner Pro | OTW 1 Milyar</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+:root{--primary:#6366f1;--primary-dark:#4f46e5;--primary-light:#818cf8;--green:#10b981;--red:#ef4444;--orange:#f59e0b;--blue:#3b82f6;--purple:#a855f7;--bg:#f1f5f9;--card:#fff;--text:#1e293b;--text-light:#64748b;--border:#e2e8f0;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);--shadow-lg:0 10px 30px rgba(0,0,0,.1)}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* Header */
+.header{background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 50%,#6366f1 100%);color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(79,70,229,.3)}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.header h1{font-size:20px;font-weight:800;display:flex;align-items:center;gap:8px}
+.header h1 i{font-size:24px}
+.header-sub{font-size:12px;opacity:.8;margin-top:2px}
+.header-actions{display:flex;gap:8px;align-items:center}
+
+/* Month Tabs */
+.month-bar{background:var(--card);padding:10px 16px;border-bottom:2px solid var(--border);position:sticky;top:62px;z-index:90;box-shadow:var(--shadow)}
+.month-bar-inner{max-width:1200px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.month-btn{padding:6px 14px;border:none;background:#f1f5f9;border-radius:20px;font-size:13px;font-weight:600;color:var(--text-light);cursor:pointer;white-space:nowrap;transition:all .2s}
+.month-btn:hover{background:#e0e7ff;color:var(--primary)}
+.month-btn.active{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,.4)}
+
+/* Main Tabs */
+.tab-bar{max-width:1200px;margin:0 auto;padding:12px 16px 0;display:flex;gap:8px}
+.tab-btn{padding:10px 20px;border:none;background:var(--card);border-radius:10px 10px 0 0;font-size:14px;font-weight:600;color:var(--text-light);cursor:pointer;transition:all .2s;border-bottom:3px solid transparent;display:flex;align-items:center;gap:6px}
+.tab-btn:hover{color:var(--primary)}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);background:var(--card)}
+
+/* Content */
+.content{max-width:1200px;margin:0 auto;padding:0 16px 80px}
+.tab-content{display:none;animation:fadeIn .3s ease}
+.tab-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Cards */
+.card{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.card-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.card-title i{color:var(--primary)}
+
+/* Stat Cards */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .2s}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.stat-card.income::before{background:var(--green)}
+.stat-card.expense::before{background:var(--red)}
+.stat-card.saving::before{background:var(--blue)}
+.stat-card.balance::before{background:var(--primary)}
+.stat-card.daily::before{background:var(--orange)}
+.stat-card.jajan::before{background:var(--purple)}
+.stat-label{font-size:12px;color:var(--text-light);font-weight:600;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:800}
+.stat-value.green{color:var(--green)}.stat-value.red{color:var(--red)}.stat-value.blue{color:var(--blue)}.stat-value.purple{color:var(--purple)}.stat-value.primary{color:var(--primary)}.stat-value.orange{color:var(--orange)}
+.stat-sub{font-size:11px;color:var(--text-light);margin-top:4px}
+
+/* Tables */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{text-align:left;padding:10px 12px;background:#f8fafc;color:var(--text-light);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border)}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover{background:#f8fafc}
+.data-table .total-row{font-weight:700;background:#f1f5f9}
+.data-table .total-row td{border-top:2px solid var(--border)}
+
+/* Badges */
+.badge{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;display:inline-block}
+.badge.high{background:#fee2e2;color:#dc2626}
+.badge.medium{background:#fef3c7;color:#d97706}
+.badge.low{background:#dbeafe;color:#2563eb}
+.badge.optional{background:#e0e7ff;color:#4f46e5}
+.badge.utama{background:#d1fae5;color:#059669}
+.badge.sampingan{background:#ede9fe;color:#7c3aed}
+
+/* Inputs */
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;font-weight:600;color:var(--text-light)}
+input,select,textarea{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Inter';outline:none;transition:border .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+
+/* Buttons */
+.btn{padding:9px 18px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#059669}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc2626}
+.btn-orange{background:var(--orange);color:#fff}.btn-orange:hover{background:#d97706}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-icon{padding:5px 8px;font-size:13px}
+
+/* Charts */
+.chart-container{position:relative;height:280px;width:100%}
+.chart-container.small{height:200px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.two-col{grid-template-columns:1fr}}
+
+/* Two section layout for tracker */
+.tracker-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.tracker-grid{grid-template-columns:1fr}}
+
+/* Progress */
+.progress-bar{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:4px;transition:width .5s}
+
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;animation:toastIn .3s ease}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.active{display:flex;animation:fadeIn .2s}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:16px}
+
+/* Footer */
+.footer{background:#1e293b;color:#94a3b8;padding:16px 20px;text-align:center;font-size:13px;position:fixed;bottom:0;left:0;right:0;z-index:80;border-top:3px solid var(--primary)}
+.footer a{color:var(--primary-light);text-decoration:none;font-weight:600}
+.footer a:hover{text-decoration:underline}
+.footer-dev{font-weight:700;color:#fff;margin-bottom:4px}
+.footer-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.footer-links a{display:flex;align-items:center;gap:4px}
+
+/* Empty state */
+.empty{text-align:center;padding:30px;color:var(--text-light);font-size:14px}
+.empty i{font-size:36px;margin-bottom:10px;display:block;opacity:.3}
+
+/* Delete button in table */
+.del-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:4px;opacity:.5;transition:opacity .2s}
+.del-btn:hover{opacity:1}
+
+/* Responsive */
+@media(max-width:600px){
+  .header h1{font-size:16px}
+  .stat-value{font-size:18px}
+  .card{padding:14px}
+  .data-table{font-size:12px}
+  .data-table th,.data-table td{padding:8px 6px}
+  .form-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1><i class="fas fa-wallet"></i> Financial Planner Pro</h1>
+      <div class="header-sub">OTW 1 Milyar | Manajemen Keuangan Bulanan</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff" onclick="exportData()"><i class="fas fa-download"></i> Backup</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff" onclick="document.getElementById('import-file').click()"><i class="fas fa-upload"></i> Restore</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+</div>
+
+<!-- Month Bar -->
+<div class="month-bar">
+  <div class="month-bar-inner" id="month-bar"></div>
+</div>
+
+<!-- Main Tabs -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchMainTab('dashboard')" id="mtab-dashboard"><i class="fas fa-chart-pie"></i> Dashboard</button>
+  <button class="tab-btn" onclick="switchMainTab('tracker')" id="mtab-tracker"><i class="fas fa-receipt"></i> Tracker</button>
+  <button class="tab-btn" onclick="switchMainTab('rekap')" id="mtab-rekap"><i class="fas fa-calendar-alt"></i> Rekap Tahunan</button>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- DASHBOARD TAB -->
+  <div class="tab-content active" id="ctab-dashboard">
+    <!-- Stat Cards -->
+    <div class="stats-grid" id="stat-cards"></div>
+
+    <!-- Summary Chart -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-chart-bar"></i> Ringkasan Pendapatan vs Pengeluaran</div>
+        <div class="chart-container"><canvas id="chart-summary"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fas fa-piggy-bank"></i> Ringkasan Tabungan</div>
+        <div class="chart-container"><canvas id="chart-saving"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Fixed Cost -->
+    <div class="card">
+      <div class="card-title"><i class="fas fa-house"></i> Pengeluaran Tetap / Fixed Cost</div>
+      <table class="data-table" id="table-fixedcost">
+        <thead><tr><th>Keterangan</th><th>Prioritas</th><th>Rencana</th><th>Aktual</th><th></th></tr></thead>
+        <tbody id="tb-fixedcost"></tbody>
+      </table>
+      <div style="margin-top:12px">
+        <button class="btn btn-outline btn-sm" onclick="addFixedCostRow()"><i class="fas fa-plus"></i> Tambah Fixed Cost</button>
+      </div>
+    </div>
+
+    <!-- Income / Saving / Variable / Subscription -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-money-bill-trend-up"></i> Pendapatan / Income</div>
+        <table class="data-table">
+          <thead><tr><th>Sumber</th><th>Tipe</th><th>Jumlah</th><th></th></tr></thead>
+          <tbody id="tb-income"></tbody>
+        </table>
+        <div style="margin-top:12px">
+          <button class="btn btn-outline btn-sm" onclick="addIncomeRow()"><i class="fas fa-plus"></i> Tambah Sumber Pendapatan</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fas fa-piggy-bank"></i> Nabung / Saving</div>
+        <table class="data-table">
+          <thead><tr><th>Keterangan</th><th>Prioritas</th><th>Rencana</th><th>Aktual</th><th></th></tr></thead>
+          <tbody id="tb-saving"></tbody>
+        </table>
+        <div style="margin-top:12px">
+          <button class="btn btn-outline btn-sm" onclick="addSavingRow()"><i class="fas fa-plus"></i> Tambah Tabungan</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-cart-shopping"></i> Pengeluaran Tidak Tetap / Variable Cost</div>
+        <table class="data-table">
+          <thead><tr><th>Keterangan</th><th>Prioritas</th><th>Rencana</th><th>Aktual</th></tr></thead>
+          <tbody id="tb-variable"></tbody>
+        </table>
+        <div style="margin-top:10px;font-size:12px;color:var(--text-light)">* Otomatis dari Tracker</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fas fa-credit-card"></i> Biaya Langganan & Hutang</div>
+        <table class="data-table">
+          <thead><tr><th>Keterangan</th><th>Prioritas</th><th>Rencana</th><th>Aktual</th><th></th></tr></thead>
+          <tbody id="tb-subscription"></tbody>
+        </table>
+        <div style="margin-top:12px">
+          <button class="btn btn-outline btn-sm" onclick="addSubscriptionRow()"><i class="fas fa-plus"></i> Tambah Langganan/Hutang</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="card" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff">
+      <div class="card-title" style="color:#fff"><i class="fas fa-calculator"></i> Ringkasan Keuangan Bulan Ini</div>
+      <div id="summary-detail" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px"></div>
+    </div>
+  </div>
+
+  <!-- TRACKER TAB -->
+  <div class="tab-content" id="ctab-tracker">
+    <!-- Tracker Stats -->
+    <div class="stats-grid" id="tracker-stats"></div>
+
+    <div class="tracker-grid">
+      <!-- Daily Expense Tracker -->
+      <div class="card">
+        <div class="card-title"><i class="fas fa-store"></i> Tracker Pengeluaran Sehari-Hari</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tanggal</label>
+            <input type="date" id="daily-date">
+          </div>
+          <div class="form-group">
+            <label>Keterangan</label>
+            <input type="text" id="daily-desc" placeholder="cth: Beli Gas Elpiji">
+          </div>
+          <div class="form-group">
+            <label>Jumlah</label>
+            <input type="number" id="daily-qty" value="1" min="1">
+          </div>
+          <div class="form-group">
+            <label>Harga</label>
+            <input type="number" id="daily-price" placeholder="cth: 25000">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addDailyExpense()"><i class="fas fa-plus"></i> Tambah Pengeluaran</button>
+        <table class="data-table" style="margin-top:14px">
+          <thead><tr><th>Tgl</th><th>Keterangan</th><th>Jml</th><th>Harga</th><th>Total</th><th></th></tr></thead>
+          <tbody id="tb-daily"></tbody>
+        </table>
+      </div>
+
+      <!-- Jajan / Nongkrong Tracker -->
+      <div class="card">
+        <div class="card-title"><i class="fas fa-mug-hot"></i> Tracker Jajan / Nongkrong</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tanggal</label>
+            <input type="date" id="jajan-date">
+          </div>
+          <div class="form-group">
+            <label>Jajanan / Nongkrong</label>
+            <input type="text" id="jajan-desc" placeholder="cth: Beli Kopi">
+          </div>
+          <div class="form-group">
+            <label>Uang Dihabiskan</label>
+            <input type="number" id="jajan-amount" placeholder="cth: 22000">
+          </div>
+          <div class="form-group">
+            <label>Keterangan</label>
+            <input type="text" id="jajan-note" placeholder="cth: Kopi + Sandwich">
+          </div>
+        </div>
+        <button class="btn btn-orange btn-sm" onclick="addJajanExpense()"><i class="fas fa-plus"></i> Tambah Jajan</button>
+        <table class="data-table" style="margin-top:14px">
+          <thead><tr><th>Tgl</th><th>Jajanan</th><th>Uang</th><th>Keterangan</th><th></th></tr></thead>
+          <tbody id="tb-jajan"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- REKAP TAHUNAN TAB -->
+  <div class="tab-content" id="ctab-rekap">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-calendar-alt"></i> Rekap Tahunan <span id="rekap-year" style="font-size:13px;color:var(--text-light);font-weight:400"></span></div>
+      <table class="data-table" id="table-rekap">
+        <thead><tr><th>Bulan</th><th>Total Pendapatan</th><th>Total Pengeluaran</th><th>Total Tabungan</th><th>Sisa Uang</th></tr></thead>
+        <tbody id="tb-rekap"></tbody>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-chart-line"></i> Trend Pendapatan vs Pengeluaran</div>
+        <div class="chart-container"><canvas id="chart-rekap-trend"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fas fa-chart-bar"></i> Sisa Uang per Bulan</div>
+        <div class="chart-container"><canvas id="chart-rekap-balance"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center">
+      <button class="btn btn-primary" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> Export Laporan PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal">
+    <h3>Pengaturan</h3>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Nama Pemilik</label>
+      <input type="text" id="set-name" placeholder="Nama Anda">
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Tahun</label>
+      <input type="number" id="set-year" value="2025">
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Mata Uang</label>
+      <select id="set-currency">
+        <option value="Rp">Rp (IDR)</option>
+        <option value="$">$ (USD)</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="saveSettings()">Simpan</button>
+    <button class="btn btn-outline" style="margin-left:8px" onclick="closeModal('modal-settings')">Batal</button>
+    <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+    <button class="btn btn-red btn-sm" onclick="resetAll()"><i class="fas fa-trash"></i> Reset Semua Data</button>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-dev">Developed by Mohamad Hartadi</div>
+  <div class="footer-links">
+    <a href="https://facebook.com/m.hartadi" target="_blank"><i class="fab fa-facebook"></i> facebook.com/m.hartadi</a>
+    <a href="https://newbieonline7.blogspot.com" target="_blank"><i class="fas fa-blog"></i> newbieonline7.blogspot.com</a>
+    <a href="https://wa.me/6282231036047" target="_blank"><i class="fab fa-whatsapp"></i> 082231036047</a>
+  </div>
+</div>
+
+<script>
+// ========== DATA MODEL ==========
+const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const MONTH_SHORT = ['JAN','FEB','MAR','APR','MEI','JUN','JUL','AUG','SEP','OKT','NOV','DES'];
+
+let settings = {name:'', year:2025, currency:'Rp'};
+let currentMonth = new Date().getMonth();
+let data = {};
+
+// Initialize data structure for all 12 months
+function initData() {
+  for (let i = 0; i < 12; i++) {
+    if (!data['m'+i]) {
+      data['m'+i] = {
+        income: [],
+        fixedCost: [],
+        saving: [],
+        subscription: [],
+        dailyExpense: [],
+        jajan: []
+      };
+    }
+  }
+}
+
+// Load from localStorage
+function loadData() {
+  const saved = localStorage.getItem('finplanner_data');
+  if (saved) {
+    try { data = JSON.parse(saved); } catch(e) { data = {}; }
+  }
+  const savedSettings = localStorage.getItem('finplanner_settings');
+  if (savedSettings) {
+    try { settings = {...settings, ...JSON.parse(savedSettings)}; } catch(e) {}
+  }
+  initData();
+  // Seed default data if empty (based on Excel template)
+  if (data.m7 && data.m7.income.length === 0 && data.m7.fixedCost.length === 0) {
+    seedDefaultData();
+  }
+}
+
+function saveData() {
+  localStorage.setItem('finplanner_data', JSON.stringify(data));
+  localStorage.setItem('finplanner_settings', JSON.stringify(settings));
+}
+
+function seedDefaultData() {
+  const m = 7; // August (current month in template)
+  data['m'+m] = {
+    income: [
+      {sumber:'Orang Tua', tipe:'Utama', jumlah:100000},
+      {sumber:'Pekerjaan', tipe:'Sampingan', jumlah:6000000},
+      {sumber:'Bisnis', tipe:'Sampingan', jumlah:3000000},
+      {sumber:'Freelance', tipe:'Sampingan', jumlah:1000000},
+      {sumber:'Investasi', tipe:'Sampingan', jumlah:1000000}
+    ],
+    fixedCost: [
+      {ket:'Sewa Kos', prioritas:'High', rencana:1500000, aktual:1500000},
+      {ket:'Uang Makan', prioritas:'Medium', rencana:1000000, aktual:1000000},
+      {ket:'Uang Transportasi', prioritas:'Optional', rencana:1000000, aktual:1000000},
+      {ket:'Uang Jalan', prioritas:'Optional', rencana:500000, aktual:500000}
+    ],
+    saving: [
+      {ket:'Dana Darurat', prioritas:'High', rencana:100000, aktual:100000},
+      {ket:'Investasi Saham', prioritas:'Low', rencana:400000, aktual:400000},
+      {ket:'Beli Emas', prioritas:'Medium', rencana:1000000, aktual:700000},
+      {ket:'Nabung Crypto', prioritas:'High', rencana:1500000, aktual:1250000},
+      {ket:'Nabung di Celengan', prioritas:'High', rencana:1200000, aktual:1000000}
+    ],
+    subscription: [
+      {ket:'Canva Pro', prioritas:'High', rencana:50000, aktual:25000}
+    ],
+    dailyExpense: [
+      {date:'2025-08-01', desc:'Ongkos Parkir', qty:1, price:50000},
+      {date:'2025-08-02', desc:'Beli Gas Elpiji', qty:1, price:25000},
+      {date:'2025-08-03', desc:'Servis Motor Suzuki', qty:1, price:40000}
+    ],
+    jajan: [
+      {date:'2025-08-02', desc:'Beli Kopi', amount:22000, note:'Beli Kopi + Sandwich'}
+    ]
+  };
+  saveData();
+}
+
+// ========== FORMATTING ==========
+function fmt(num) {
+  if (!num || isNaN(num)) num = 0;
+  return settings.currency + ' ' + Number(num).toLocaleString('id-ID');
+}
+
+function fmtShort(num) {
+  if (!num || isNaN(num)) num = 0;
+  num = Number(num);
+  if (num >= 1000000) return (num/1000000).toFixed(1).replace('.0','') + 'jt';
+  if (num >= 1000) return Math.round(num/1000) + 'k';
+  return num.toString();
+}
+
+// ========== CALCULATIONS ==========
+function getMonthData(m) { return data['m'+m]; }
+
+function calcIncomeTotal(m) {
+  return getMonthData(m).income.reduce((s,i) => s + (Number(i.jumlah)||0), 0);
+}
+function calcFixedCostTotal(m, field) {
+  return getMonthData(m).fixedCost.reduce((s,i) => s + (Number(i[field])||0), 0);
+}
+function calcSavingTotal(m, field) {
+  return getMonthData(m).saving.reduce((s,i) => s + (Number(i[field])||0), 0);
+}
+function calcSubsTotal(m, field) {
+  return getMonthData(m).subscription.reduce((s,i) => s + (Number(i[field])||0), 0);
+}
+function calcDailyTotal(m) {
+  return getMonthData(m).dailyExpense.reduce((s,i) => s + ((Number(i.price)||0)*(Number(i.qty)||0)), 0);
+}
+function calcJajanTotal(m) {
+  return getMonthData(m).jajan.reduce((s,i) => s + (Number(i.amount)||0), 0);
+}
+function calcTotalExpense(m) {
+  return calcFixedCostTotal(m,'aktual') + calcDailyTotal(m) + calcJajanTotal(m) + calcSubsTotal(m,'aktual');
+}
+function calcTotalExpenseRencana(m) {
+  return calcFixedCostTotal(m,'rencana') + calcDailyTotal(m) + calcJajanTotal(m) + calcSubsTotal(m,'rencana');
+}
+function calcSavingAktual(m) { return calcSavingTotal(m,'aktual'); }
+function calcBalance(m) {
+  return calcIncomeTotal(m) - calcTotalExpense(m) - calcSavingAktual(m);
+}
+
+// ========== RENDER ==========
+function renderMonthBar() {
+  const bar = document.getElementById('month-bar');
+  bar.innerHTML = '';
+  MONTH_SHORT.forEach((m, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'month-btn' + (i === currentMonth ? ' active' : '');
+    btn.textContent = m;
+    btn.onclick = () => { currentMonth = i; renderAll(); };
+    bar.appendChild(btn);
+  });
+}
+
+function renderStatCards() {
+  const m = currentMonth;
+  const income = calcIncomeTotal(m);
+  const expense = calcTotalExpense(m);
+  const saving = calcSavingAktual(m);
+  const balance = calcBalance(m);
+  const daily = calcDailyTotal(m);
+  const jajan = calcJajanTotal(m);
+
+  document.getElementById('stat-cards').innerHTML = `
+    <div class="stat-card income"><div class="stat-label">Pendapatan Bulanan</div><div class="stat-value green">${fmt(income)}</div></div>
+    <div class="stat-card expense"><div class="stat-label">Total Pengeluaran</div><div class="stat-value red">${fmt(expense)}</div><div class="stat-sub">Rencana: ${fmt(calcTotalExpenseRencana(m))}</div></div>
+    <div class="stat-card saving"><div class="stat-label">Uang di Tabung</div><div class="stat-value blue">${fmt(saving)}</div><div class="stat-sub">Rencana: ${fmt(calcSavingTotal(m,'rencana'))}</div></div>
+    <div class="stat-card balance"><div class="stat-label">Sisa Uang</div><div class="stat-value ${balance>=0?'green':'red'}">${fmt(balance)}</div></div>
+    <div class="stat-card daily"><div class="stat-label">Pengeluaran Sehari-Hari</div><div class="stat-value orange">${fmt(daily)}</div><div class="stat-sub">${getMonthData(m).dailyExpense.length} transaksi</div></div>
+    <div class="stat-card jajan"><div class="stat-label">Jajan & Nongkrong</div><div class="stat-value purple">${fmt(jajan)}</div><div class="stat-sub">${getMonthData(m).jajan.length} kali</div></div>
+  `;
+}
+
+function renderSummary() {
+  const m = currentMonth;
+  const income = calcIncomeTotal(m);
+  const fixedRencana = calcFixedCostTotal(m,'rencana');
+  const fixedAktual = calcFixedCostTotal(m,'aktual');
+  const variableRencana = calcDailyTotal(m) + calcJajanTotal(m);
+  const subsRencana = calcSubsTotal(m,'rencana');
+  const subsAktual = calcSubsTotal(m,'aktual');
+  const totalExp = calcTotalExpense(m);
+  const saving = calcSavingAktual(m);
+  const balance = calcBalance(m);
+
+  document.getElementById('summary-detail').innerHTML = `
+    <div><div style="opacity:.8;font-size:12px">Pendapatan</div><div style="font-size:20px;font-weight:800">${fmt(income)}</div></div>
+    <div><div style="opacity:.8;font-size:12px">Fixed Cost (Aktual)</div><div style="font-size:20px;font-weight:800">${fmt(fixedAktual)}</div></div>
+    <div><div style="opacity:.8;font-size:12px">Variable Cost</div><div style="font-size:20px;font-weight:800">${fmt(variableRencana)}</div></div>
+    <div><div style="opacity:.8;font-size:12px">Langganan & Hutang</div><div style="font-size:20px;font-weight:800">${fmt(subsAktual)}</div></div>
+    <div><div style="opacity:.8;font-size:12px">Total Pengeluaran</div><div style="font-size:20px;font-weight:800">${fmt(totalExp)}</div></div>
+    <div><div style="opacity:.8;font-size:12px">Total Tabungan</div><div style="font-size:20px;font-weight:800">${fmt(saving)}</div></div>
+    <div><div style="opacity:.8;font-size:12px">Sisa Uang</div><div style="font-size:20px;font-weight:800">${fmt(balance)}</div></div>
+    <div><div style="opacity:.8;font-size:12px">Rencana Total Pengeluaran</div><div style="font-size:20px;font-weight:800">${fmt(calcTotalExpenseRencana(m))}</div></div>
+  `;
+}
+
+function renderFixedCost() {
+  const m = currentMonth;
+  const tb = document.getElementById('tb-fixedcost');
+  tb.innerHTML = '';
+  getMonthData(m).fixedCost.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${item.ket||''}" onchange="updateField('fixedCost',${idx},'ket',this.value)" style="width:100%"></td>
+      <td><select onchange="updateField('fixedCost',${idx},'prioritas',this.value)">${prioritasOptions(item.prioritas)}</select></td>
+      <td><input type="number" value="${item.rencana||0}" onchange="updateField('fixedCost',${idx},'rencana',this.value)" style="width:100px"></td>
+      <td><input type="number" value="${item.aktual||0}" onchange="updateField('fixedCost',${idx},'aktual',this.value)" style="width:100px"></td>
+      <td><button class="del-btn" onclick="deleteRow('fixedCost',${idx})"><i class="fas fa-times"></i></button></td>
+    `;
+    tb.appendChild(tr);
+  });
+  const totalR = calcFixedCostTotal(m,'rencana');
+  const totalA = calcFixedCostTotal(m,'aktual');
+  const tr = document.createElement('tr');
+  tr.className = 'total-row';
+  tr.innerHTML = `<td colspan="2">TOTAL</td><td>${fmt(totalR)}</td><td>${fmt(totalA)}</td><td></td>`;
+  tb.appendChild(tr);
+}
+
+function prioritasOptions(sel) {
+  const opts = ['High','Medium','Low','Optional'];
+  return opts.map(o => `<option value="${o}" ${o===sel?'selected':''}>${o}</option>`).join('');
+}
+
+function tipeOptions(sel) {
+  const opts = ['Utama','Sampingan'];
+  return opts.map(o => `<option value="${o}" ${o===sel?'selected':''}>${o}</option>`).join('');
+}
+
+function renderIncome() {
+  const m = currentMonth;
+  const tb = document.getElementById('tb-income');
+  tb.innerHTML = '';
+  getMonthData(m).income.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${item.sumber||''}" onchange="updateField('income',${idx},'sumber',this.value)" style="width:100%"></td>
+      <td><select onchange="updateField('income',${idx},'tipe',this.value)">${tipeOptions(item.tipe)}</select></td>
+      <td><input type="number" value="${item.jumlah||0}" onchange="updateField('income',${idx},'jumlah',this.value)" style="width:120px"></td>
+      <td><button class="del-btn" onclick="deleteRow('income',${idx})"><i class="fas fa-times"></i></button></td>
+    `;
+    tb.appendChild(tr);
+  });
+  const total = calcIncomeTotal(m);
+  const tr = document.createElement('tr');
+  tr.className = 'total-row';
+  tr.innerHTML = `<td colspan="2">TOTAL</td><td>${fmt(total)}</td><td></td>`;
+  tb.appendChild(tr);
+}
+
+function renderSaving() {
+  const m = currentMonth;
+  const tb = document.getElementById('tb-saving');
+  tb.innerHTML = '';
+  getMonthData(m).saving.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${item.ket||''}" onchange="updateField('saving',${idx},'ket',this.value)" style="width:100%"></td>
+      <td><select onchange="updateField('saving',${idx},'prioritas',this.value)">${prioritasOptions(item.prioritas)}</select></td>
+      <td><input type="number" value="${item.rencana||0}" onchange="updateField('saving',${idx},'rencana',this.value)" style="width:100px"></td>
+      <td><input type="number" value="${item.aktual||0}" onchange="updateField('saving',${idx},'aktual',this.value)" style="width:100px"></td>
+      <td><button class="del-btn" onclick="deleteRow('saving',${idx})"><i class="fas fa-times"></i></button></td>
+    `;
+    tb.appendChild(tr);
+  });
+  const totalR = calcSavingTotal(m,'rencana');
+  const totalA = calcSavingTotal(m,'aktual');
+  const tr = document.createElement('tr');
+  tr.className = 'total-row';
+  tr.innerHTML = `<td colspan="2">TOTAL</td><td>${fmt(totalR)}</td><td>${fmt(totalA)}</td><td></td>`;
+  tb.appendChild(tr);
+}
+
+function renderVariable() {
+  const m = currentMonth;
+  const tb = document.getElementById('tb-variable');
+  const daily = calcDailyTotal(m);
+  const jajan = calcJajanTotal(m);
+  tb.innerHTML = `
+    <tr><td>Jajan & Nongkrong</td><td><span class="badge low">Low</span></td><td>${fmt(jajan)}</td><td>${fmt(jajan)}</td></tr>
+    <tr><td>Pengeluaran Sehari-Hari</td><td><span class="badge high">High</span></td><td>${fmt(daily)}</td><td>${fmt(daily)}</td></tr>
+    <tr class="total-row"><td colspan="2">TOTAL</td><td>${fmt(daily+jajan)}</td><td>${fmt(daily+jajan)}</td></tr>
+  `;
+}
+
+function renderSubscription() {
+  const m = currentMonth;
+  const tb = document.getElementById('tb-subscription');
+  tb.innerHTML = '';
+  getMonthData(m).subscription.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${item.ket||''}" onchange="updateField('subscription',${idx},'ket',this.value)" style="width:100%"></td>
+      <td><select onchange="updateField('subscription',${idx},'prioritas',this.value)">${prioritasOptions(item.prioritas)}</select></td>
+      <td><input type="number" value="${item.rencana||0}" onchange="updateField('subscription',${idx},'rencana',this.value)" style="width:100px"></td>
+      <td><input type="number" value="${item.aktual||0}" onchange="updateField('subscription',${idx},'aktual',this.value)" style="width:100px"></td>
+      <td><button class="del-btn" onclick="deleteRow('subscription',${idx})"><i class="fas fa-times"></i></button></td>
+    `;
+    tb.appendChild(tr);
+  });
+  const totalR = calcSubsTotal(m,'rencana');
+  const totalA = calcSubsTotal(m,'aktual');
+  const tr = document.createElement('tr');
+  tr.className = 'total-row';
+  tr.innerHTML = `<td colspan="2">TOTAL</td><td>${fmt(totalR)}</td><td>${fmt(totalA)}</td><td></td>`;
+  tb.appendChild(tr);
+}
+
+function renderTrackerStats() {
+  const m = currentMonth;
+  const daily = calcDailyTotal(m);
+  const jajan = calcJajanTotal(m);
+  const dailyCount = getMonthData(m).dailyExpense.length;
+  const jajanCount = getMonthData(m).jajan.length;
+  document.getElementById('tracker-stats').innerHTML = `
+    <div class="stat-card daily"><div class="stat-label">Total Pengeluaran Sehari-Hari</div><div class="stat-value orange">${fmt(daily)}</div></div>
+    <div class="stat-card jajan"><div class="stat-label">Total Jajan & Nongkrong</div><div class="stat-value purple">${fmt(jajan)}</div></div>
+    <div class="stat-card"><div class="stat-label">Jumlah Transaksi Sehari-Hari</div><div class="stat-value primary">${dailyCount}</div></div>
+    <div class="stat-card"><div class="stat-label">Kali Jajan & Nongkrong</div><div class="stat-value primary">${jajanCount}</div></div>
+  `;
+}
+
+function renderDailyTable() {
+  const m = currentMonth;
+  const tb = document.getElementById('tb-daily');
+  if (getMonthData(m).dailyExpense.length === 0) {
+    tb.innerHTML = '<tr><td colspan="6" class="empty"><i class="fas fa-inbox"></i>Belum ada transaksi</td></tr>';
+    return;
+  }
+  tb.innerHTML = '';
+  getMonthData(m).dailyExpense.forEach((item, idx) => {
+    const total = (Number(item.price)||0) * (Number(item.qty)||0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.date?item.date.substring(5):''}</td>
+      <td>${item.desc||''}</td>
+      <td>${item.qty||0}</td>
+      <td>${fmt(item.price)}</td>
+      <td>${fmt(total)}</td>
+      <td><button class="del-btn" onclick="deleteTracker('dailyExpense',${idx})"><i class="fas fa-times"></i></button></td>
+    `;
+    tb.appendChild(tr);
+  });
+  const total = calcDailyTotal(m);
+  const tr = document.createElement('tr');
+  tr.className = 'total-row';
+  tr.innerHTML = `<td colspan="4">TOTAL</td><td>${fmt(total)}</td><td></td>`;
+  tb.appendChild(tr);
+}
+
+function renderJajanTable() {
+  const m = currentMonth;
+  const tb = document.getElementById('tb-jajan');
+  if (getMonthData(m).jajan.length === 0) {
+    tb.innerHTML = '<tr><td colspan="5" class="empty"><i class="fas fa-inbox"></i>Belum ada jajan/nongkrong</td></tr>';
+    return;
+  }
+  tb.innerHTML = '';
+  getMonthData(m).jajan.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.date?item.date.substring(5):''}</td>
+      <td>${item.desc||''}</td>
+      <td>${fmt(item.amount)}</td>
+      <td>${item.note||''}</td>
+      <td><button class="del-btn" onclick="deleteTracker('jajan',${idx})"><i class="fas fa-times"></i></button></td>
+    `;
+    tb.appendChild(tr);
+  });
+  const total = calcJajanTotal(m);
+  const tr = document.createElement('tr');
+  tr.className = 'total-row';
+  tr.innerHTML = `<td colspan="2">TOTAL</td><td>${fmt(total)}</td><td></td><td></td>`;
+  tb.appendChild(tr);
+}
+
+function renderRekap() {
+  const tb = document.getElementById('tb-rekap');
+  document.getElementById('rekap-year').textContent = '(' + settings.year + ')';
+  tb.innerHTML = '';
+  let totP = 0, totE = 0, totS = 0, totB = 0;
+  MONTHS.forEach((monthName, i) => {
+    const income = calcIncomeTotal(i);
+    const expense = calcTotalExpense(i);
+    const saving = calcSavingAktual(i);
+    const balance = calcBalance(i);
+    totP += income; totE += expense; totS += saving; totB += balance;
+    const tr = document.createElement('tr');
+    if (i === currentMonth) tr.style.background = '#e0e7ff';
+    tr.innerHTML = `
+      <td style="font-weight:600">${monthName}</td>
+      <td style="color:var(--green);font-weight:600">${fmt(income)}</td>
+      <td style="color:var(--red)">${fmt(expense)}</td>
+      <td style="color:var(--blue)">${fmt(saving)}</td>
+      <td style="color:${balance>=0?'var(--green)':'var(--red)'};font-weight:700">${fmt(balance)}</td>
+    `;
+    tb.appendChild(tr);
+  });
+  const tr = document.createElement('tr');
+  tr.className = 'total-row';
+  tr.innerHTML = `<td>TOTAL TAHUN</td><td style="color:var(--green)">${fmt(totP)}</td><td style="color:var(--red)">${fmt(totE)}</td><td style="color:var(--blue)">${fmt(totS)}</td><td style="color:${totB>=0?'var(--green)':'var(--red)'}">${fmt(totB)}</td>`;
+  tb.appendChild(tr);
+}
+
+// ========== CHARTS ==========
+let chartSummary, chartSaving, chartRekapTrend, chartRekapBalance;
+
+function renderCharts() {
+  const m = currentMonth;
+  const income = calcIncomeTotal(m);
+  const fixedCost = calcFixedCostTotal(m,'aktual');
+  const daily = calcDailyTotal(m);
+  const jajan = calcJajanTotal(m);
+  const subs = calcSubsTotal(m,'aktual');
+  const saving = calcSavingAktual(m);
+  const balance = calcBalance(m);
+
+  // Summary Chart
+  if (chartSummary) chartSummary.destroy();
+  chartSummary = new Chart(document.getElementById('chart-summary'), {
+    type: 'bar',
+    data: {
+      labels: ['Pendapatan','Fixed Cost','Sehari-Hari','Jajan','Langganan','Tabungan','Sisa'],
+      datasets: [{
+        data: [income, fixedCost, daily, jajan, subs, saving, balance],
+        backgroundColor: ['#10b981','#ef4444','#f59e0b','#a855f7','#3b82f6','#6366f1','#10b981'],
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: v => fmtShort(v) } } }
+    }
+  });
+
+  // Saving Chart
+  const savingItems = getMonthData(m).saving;
+  if (chartSaving) chartSaving.destroy();
+  chartSaving = new Chart(document.getElementById('chart-saving'), {
+    type: 'doughnut',
+    data: {
+      labels: savingItems.map(s => s.ket),
+      datasets: [{
+        data: savingItems.map(s => Number(s.aktual)||0),
+        backgroundColor: ['#6366f1','#818cf8','#a855f7','#3b82f6','#10b981','#f59e0b','#ef4444']
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } }
+    }
+  });
+
+  // Rekap Trend Chart
+  const months = MONTHS.map((_,i) => MONTH_SHORT[i]);
+  const incomes = MONTHS.map((_,i) => calcIncomeTotal(i));
+  const expenses = MONTHS.map((_,i) => calcTotalExpense(i));
+  if (chartRekapTrend) chartRekapTrend.destroy();
+  chartRekapTrend = new Chart(document.getElementById('chart-rekap-trend'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'Pendapatan', data: incomes, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.1)', fill: true, tension: .3 },
+        { label: 'Pengeluaran', data: expenses, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.1)', fill: true, tension: .3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { ticks: { callback: v => fmtShort(v) } } }
+    }
+  });
+
+  // Rekap Balance Chart
+  const balances = MONTHS.map((_,i) => calcBalance(i));
+  if (chartRekapBalance) chartRekapBalance.destroy();
+  chartRekapBalance = new Chart(document.getElementById('chart-rekap-balance'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Sisa Uang',
+        data: balances,
+        backgroundColor: balances.map(b => b >= 0 ? '#10b981' : '#ef4444'),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: v => fmtShort(v) } } }
+    }
+  });
+}
+
+// ========== ACTIONS ==========
+function updateField(cat, idx, field, val) {
+  data['m'+currentMonth][cat][idx][field] = field === 'ket' || field === 'sumber' || field === 'prioritas' || field === 'tipe' ? val : Number(val);
+  saveData();
+  renderDashboard();
+}
+
+function deleteRow(cat, idx) {
+  data['m'+currentMonth][cat].splice(idx, 1);
+  saveData();
+  renderDashboard();
+}
+
+function addFixedCostRow() {
+  data['m'+currentMonth].fixedCost.push({ket:'', prioritas:'Medium', rencana:0, aktual:0});
+  saveData(); renderDashboard();
+}
+function addIncomeRow() {
+  data['m'+currentMonth].income.push({sumber:'', tipe:'Sampingan', jumlah:0});
+  saveData(); renderDashboard();
+}
+function addSavingRow() {
+  data['m'+currentMonth].saving.push({ket:'', prioritas:'Medium', rencana:0, aktual:0});
+  saveData(); renderDashboard();
+}
+function addSubscriptionRow() {
+  data['m'+currentMonth].subscription.push({ket:'', prioritas:'Medium', rencana:0, aktual:0});
+  saveData(); renderDashboard();
+}
+
+function addDailyExpense() {
+  const date = document.getElementById('daily-date').value;
+  const desc = document.getElementById('daily-desc').value;
+  const qty = document.getElementById('daily-qty').value;
+  const price = document.getElementById('daily-price').value;
+  if (!date || !desc || !price) { showToast('Isi tanggal, keterangan, dan harga!'); return; }
+  data['m'+currentMonth].dailyExpense.push({date, desc, qty:Number(qty)||1, price:Number(price)||0});
+  saveData();
+  document.getElementById('daily-desc').value = '';
+  document.getElementById('daily-price').value = '';
+  renderTracker();
+  showToast('Pengeluaran ditambahkan!');
+}
+
+function addJajanExpense() {
+  const date = document.getElementById('jajan-date').value;
+  const desc = document.getElementById('jajan-desc').value;
+  const amount = document.getElementById('jajan-amount').value;
+  const note = document.getElementById('jajan-note').value;
+  if (!date || !desc || !amount) { showToast('Isi tanggal, jajanan, dan jumlah uang!'); return; }
+  data['m'+currentMonth].jajan.push({date, desc, amount:Number(amount)||0, note});
+  saveData();
+  document.getElementById('jajan-desc').value = '';
+  document.getElementById('jajan-amount').value = '';
+  document.getElementById('jajan-note').value = '';
+  renderTracker();
+  showToast('Jajan ditambahkan!');
+}
+
+function deleteTracker(cat, idx) {
+  data['m'+currentMonth][cat].splice(idx, 1);
+  saveData();
+  renderTracker();
+}
+
+function switchMainTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  document.getElementById('ctab-'+tab).classList.add('active');
+  document.getElementById('mtab-'+tab).classList.add('active');
+  if (tab === 'rekap') renderRekap();
+}
+
+function renderDashboard() {
+  renderStatCards();
+  renderFixedCost();
+  renderIncome();
+  renderSaving();
+  renderVariable();
+  renderSubscription();
+  renderSummary();
+  renderCharts();
+}
+
+function renderTracker() {
+  renderTrackerStats();
+  renderDailyTable();
+  renderJajanTable();
+}
+
+function renderAll() {
+  renderMonthBar();
+  // Set default dates
+  const today = new Date().toISOString().substring(0,10);
+  document.getElementById('daily-date').value = today;
+  document.getElementById('jajan-date').value = today;
+  renderDashboard();
+  renderTracker();
+  renderRekap();
+}
+
+// ========== EXPORT / IMPORT ==========
+function exportData() {
+  const blob = new Blob([JSON.stringify({data, settings}, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `financial-planner-backup-${new Date().toISOString().substring(0,10)}.json`;
+  a.click();
+  showToast('Backup berhasil diunduh!');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (parsed.data) data = parsed.data;
+      if (parsed.settings) settings = {...settings, ...parsed.settings};
+      initData();
+      saveData();
+      renderAll();
+      showToast('Data berhasil direstore!');
+    } catch(err) {
+      showToast('File tidak valid!');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(18);
+  doc.text('Laporan Keuangan Tahunan ' + settings.year, 14, 20);
+  doc.setFontSize(10);
+  doc.text('Nama: ' + (settings.name || '-'), 14, 28);
+  doc.text('Dibuat: ' + new Date().toLocaleDateString('id-ID'), 14, 34);
+
+  const rows = [];
+  let totP=0, totE=0, totS=0, totB=0;
+  MONTHS.forEach((monthName, i) => {
+    const income = calcIncomeTotal(i);
+    const expense = calcTotalExpense(i);
+    const saving = calcSavingAktual(i);
+    const balance = calcBalance(i);
+    totP+=income; totE+=expense; totS+=saving; totB+=balance;
+    rows.push([
+      monthName,
+      fmt(income), fmt(expense), fmt(saving), fmt(balance)
+    ]);
+  });
+  rows.push(['TOTAL', fmt(totP), fmt(totE), fmt(totS), fmt(totB)]);
+
+  doc.autoTable({
+    startY: 40,
+    head: [['Bulan','Pendapatan','Pengeluaran','Tabungan','Sisa Uang']],
+    body: rows,
+    theme: 'striped',
+    headStyles: { fillColor: [79, 70, 229] }
+  });
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text('Developed by Mohamad Hartadi | FB: facebook.com/m.hartadi | Blog: newbieonline7.blogspot.com | WA: 082231036047', 14, doc.internal.pageSize.height - 10);
+  }
+
+  doc.save(`Laporan-Keuangan-${settings.year}.pdf`);
+  showToast('PDF berhasil diunduh!');
+}
+
+function resetAll() {
+  if (!confirm('Yakin reset SEMUA data? Tidak bisa dibatalkan!')) return;
+  localStorage.removeItem('finplanner_data');
+  data = {};
+  initData();
+  saveData();
+  renderAll();
+  closeModal('modal-settings');
+  showToast('Semua data direset!');
+}
+
+function saveSettings() {
+  settings.name = document.getElementById('set-name').value;
+  settings.year = Number(document.getElementById('set-year').value);
+  settings.currency = document.getElementById('set-currency').value;
+  saveData();
+  renderAll();
+  closeModal('modal-settings');
+  showToast('Pengaturan disimpan!');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ========== INIT ==========
+loadData();
+renderAll();
+</script>
+</body>
+</html>
